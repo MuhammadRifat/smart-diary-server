@@ -32,7 +32,8 @@ client.connect(err => {
   })
 
   app.post('/allPosts', (req, res) => {
-    memoriesCollection.find({})
+    const email = req.body.email;
+    memoriesCollection.find({email: email})
       .toArray((err, result) => {
         res.send(result);
       })

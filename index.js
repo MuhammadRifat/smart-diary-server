@@ -1,5 +1,6 @@
 const express = require('express')
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config()
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -15,11 +16,33 @@ const port = 5000
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
-  const momoriesCollection = client.db(`${process.env.DB_NAME}`).collection("memories");
+  const memoriesCollection = client.db(`${process.env.DB_NAME}`).collection("memories");
   console.log("database connected");
 
   app.get('/', (req, res) => {
     res.send("It' Working!");
+  })
+
+  app.post('/addPost', (req, res) => {
+    const postData = req.body;
+    memoriesCollection.insertOne(postData)
+      .then(result => {
+        res.send(result.insertedCount > 0);
+      })
+  })
+
+  app.post('/allPosts', (req, res) => {
+    memoriesCollection.find({})
+      .toArray((err, result) => {
+        res.send(result);
+      })
+  })
+
+  app.delete('/deletePost/:id', (req, res) => {
+    memoriesCollection.deleteOne({ _id: ObjectId(req.params.id) })
+      .then(result => {
+        res.send(result.deletedCount > 0);
+      })
   })
 
 });
